@@ -356,6 +356,15 @@ class SettingInterface(ScrollArea):
         #     cfg.get(cfg.downloadFolder)
         # )
 
+        # 新增 Dufs 解析開關
+        self.dufsParsingCard = SwitchSettingCard(
+            FIF.GLOBE,
+            "Dufs 解析",
+            "啟用後將在導覽列新增 Dufs 解析下載功能",
+            configItem=cfg.enableDufsParsing,
+            parent=self.downloadGroup,
+        )
+
         self.proxyServerCard = CustomProxySettingCard(
             cfg.proxyServer, self.downloadGroup
         )

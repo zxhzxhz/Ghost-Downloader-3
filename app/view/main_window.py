@@ -23,7 +23,7 @@ from ..common.concurrent.TaskExecutor import TaskExecutor
 from ..components.add_task_dialog import AddTaskOptionDialog
 from ..components.custom_tray import CustomSystemTrayIcon
 from ..components.update_dialog import checkUpdate
-
+from ..components.dufs_dialog import DufsDialog
 
 def updateFrameless(self):
     stayOnTop = Qt.WindowType.WindowStaysOnTopHint if self.windowFlags() & Qt.WindowType.WindowStaysOnTopHint else 0
@@ -64,7 +64,7 @@ class ThemeChangedListener(QThread):
 class MainWindow(MSFluentWindow):
     def __init__(self, silence=False):
         super().__init__()
-
+        self.dufsNavItem = None # 用於追蹤 Dufs 按鈕
         self.setMicaEffectEnabled(False)
 
         self.initWindow()
@@ -133,7 +133,8 @@ class MainWindow(MSFluentWindow):
             checkUpdate(self)
 
         self.splashScreen.finish()
-
+        # 連接 Dufs 設定變更的信號
+        cfg.enableDufsParsing.valueChanged.connect(self.__onDufsSettingChanged)
     def systemTitleBarRect(self, size: QSize) -> QRect:
         """重写 macOS 三大件到左上角"""
         return QRect(0, 0 if self.isFullScreen() else 9, 75, size.height())
@@ -242,11 +243,23 @@ class MainWindow(MSFluentWindow):
             onClick=lambda:self.showAddTaskDialog(),  # 否则会传奇怪的参数
             position=NavigationItemPosition.TOP,
         )
+        # 根據設定的初始值決定是否顯示 Dufs 按鈕
+        self.__onDufsSettingChanged(cfg.enableDufsParsing.value)
 
         # self.addSubInterface(self.debugInterface, FIF.DEVELOPER_TOOLS, "调试信息")
         # add custom widget to bottom
         self.addSubInterface(self.settingInterface, FIF.SETTING, self.tr("设置"), position=NavigationItemPosition.BOTTOM)
-
+        self.navigationInterface.addItem(
+            routeKey='dufsButton',
+            text='Dufs解析',
+            selectable=False,
+            icon=FIF.GLOBE,
+            onClick=self.showDufsDialog,
+            position=NavigationItemPosition.TOP,
+        )
+    def showDufsDialog(self):
+        dialog = DufsDialog(self)
+        dialog.exec()        
     def initWindow(self):
 
         if cfg.geometry.value == "Default":
@@ -279,7 +292,24 @@ class MainWindow(MSFluentWindow):
         self.splashScreen = CustomSplashScreen(self.windowIcon(), self)
         self.splashScreen.setIconSize(QSize(106, 106))
         self.splashScreen.raise_()
-
+    def __onDufsSettingChanged(self, enabled: bool):
+        """ 根據設定動態新增或移除 Dufs 按鈕 """
+        if enabled:
+            if not self.dufsNavItem:
+                self.dufsNavItem = self.navigationInterface.addItem(
+                    routeKey='dufsButton',
+                    text='Dufs 批量下載',
+                    selectable=False,
+                    icon=FIF.GLOBE,
+                    onClick=self.showDufsDialog,
+                    position=NavigationItemPosition.TOP,
+                )
+                # 重新排序以確保按鈕位置正確
+                self.navigationInterface.widget(self.taskInterface.objectName()).parent().insertWidget(2, self.dufsNavItem)
+        else:
+            if self.dufsNavItem:
+                self.navigationInterface.removeWidget('dufsButton')
+                self.dufsNavItem = None
     def onAppError(self, message: str):
         """ app error slot """
         QApplication.clipboard().setText(message)

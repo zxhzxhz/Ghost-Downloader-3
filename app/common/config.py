@@ -114,6 +114,7 @@ class Config(QConfig):
     )  # 单位 KB
     autoSpeedUp = ConfigItem("Download", "AutoSpeedUp", True, BoolValidator())
     SSLVerify = ConfigItem("Download", "SSLVerify", False, BoolValidator(), restart=True)
+    enableDufsParsing = ConfigItem("Download", "EnableDufsParsing", False, BoolValidator())
     proxyServer = ConfigItem("Download", "ProxyServer", "Auto", ProxyValidator())
 
     # browser
