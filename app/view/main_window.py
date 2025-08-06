@@ -259,7 +259,25 @@ class MainWindow(MSFluentWindow):
         )
     def showDufsDialog(self):
         dialog = DufsDialog(self)
-        dialog.exec()        
+        dialog.exec()
+    def __onDufsSettingChanged(self, enabled: bool):
+        """ 根據設定動態新增或移除 Dufs 按鈕 """
+        if enabled:
+            # 如果按鈕不存在，就新增它
+            if not self.dufsNavItem:
+                self.dufsNavItem = self.navigationInterface.addItem(
+                    routeKey='dufsButton',
+                    text='Dufs解析',
+                    selectable=False,
+                    icon=FIF.GLOBE,
+                    onClick=self.showDufsDialog,
+                    position=NavigationItemPosition.TOP,
+                )
+        else:
+            # 如果按鈕存在，就移除它
+            if self.dufsNavItem:
+                self.navigationInterface.removeWidget('dufsButton')
+                self.dufsNavItem = None
     def initWindow(self):
 
         if cfg.geometry.value == "Default":
@@ -292,24 +310,7 @@ class MainWindow(MSFluentWindow):
         self.splashScreen = CustomSplashScreen(self.windowIcon(), self)
         self.splashScreen.setIconSize(QSize(106, 106))
         self.splashScreen.raise_()
-    def __onDufsSettingChanged(self, enabled: bool):
-        """ 根據設定動態新增或移除 Dufs 按鈕 """
-        if enabled:
-            if not self.dufsNavItem:
-                self.dufsNavItem = self.navigationInterface.addItem(
-                    routeKey='dufsButton',
-                    text='Dufs 批量下載',
-                    selectable=False,
-                    icon=FIF.GLOBE,
-                    onClick=self.showDufsDialog,
-                    position=NavigationItemPosition.TOP,
-                )
-                # 重新排序以確保按鈕位置正確
-                self.navigationInterface.widget(self.taskInterface.objectName()).parent().insertWidget(2, self.dufsNavItem)
-        else:
-            if self.dufsNavItem:
-                self.navigationInterface.removeWidget('dufsButton')
-                self.dufsNavItem = None
+
     def onAppError(self, message: str):
         """ app error slot """
         QApplication.clipboard().setText(message)

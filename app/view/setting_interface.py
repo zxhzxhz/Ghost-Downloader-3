@@ -359,10 +359,10 @@ class SettingInterface(ScrollArea):
         # 新增 Dufs 解析開關
         self.dufsParsingCard = SwitchSettingCard(
             FIF.GLOBE,
-            "Dufs 解析",
-            "啟用後將在導覽列新增 Dufs 解析下載功能",
-            configItem=cfg.enableDufsParsing,
-            parent=self.downloadGroup,
+            self.tr("Dufs 解析"),
+            self.tr("啟用後將在導覽列新增 Dufs 解析下載功能"),
+            cfg.enableDufsParsing,
+            self.downloadGroup,
         )
 
         self.proxyServerCard = CustomProxySettingCard(
@@ -551,6 +551,7 @@ class SettingInterface(ScrollArea):
         self.downloadGroup.addSettingCard(self.autoSpeedUpCard)
         self.downloadGroup.addSettingCard(self.SSLVerifyCard)
         self.downloadGroup.addSettingCard(self.downloadFolderCard)
+        self.downloadGroup.addSettingCard(self.dufsParsingCard)
         self.downloadGroup.addSettingCard(self.proxyServerCard)
 
         self.browserGroup.addSettingCard(self.browserExtensionCard)
